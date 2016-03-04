@@ -20,10 +20,11 @@
 
 const int dataPin = 17;
 const int clockPin = 27;
+const uint16_t numberOfLeds = 32;
 
 // Set the first variable to the NUMBER of pixels. 32 = 32 pixels in a row
 // The LED strips are 32 LEDs per meter but you can extend/cut the strip
-LPD8806 strip = LPD8806(32, dataPin, clockPin);
+LPD8806 strip(numberOfLeds, dataPin, clockPin);
 
 void setup() {
   // Start up the LED strip

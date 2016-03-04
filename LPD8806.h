@@ -1,14 +1,3 @@
-#ifndef RASPBERRY_PI
-
-#if (ARDUINO >= 100)
- #include <Arduino.h>
-#else
- #include <WProgram.h>
- #include <pins_arduino.h>
-#endif
-
-#else // ifndef RASPBERRY_PI
-
 #include <stdlib.h>
 #include <string.h>
 
@@ -28,51 +17,39 @@ typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
 #endif
 
-#endif  // ifndef RASPBERRY_PI
-
 class LPD8806 {
 
  public:
-
   LPD8806(uint16_t n, uint8_t dpin, uint8_t cpin); // Configurable pins
-#ifndef RASPBERRY_PI
-  LPD8806(uint16_t n); // Use SPI hardware; specific pins only
-  LPD8806(void); // Empty constructor; init pins & strip length later
-#endif  // ifndef RASPBERRY_PI
+  ~LPD8806();
   void
     begin(void),
     setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b),
     setPixelColor(uint16_t n, uint32_t c),
+    clearPixelColors(),
     show(void),
     updatePins(uint8_t dpin, uint8_t cpin), // Change pins, configurable
-#ifndef RASPBERRY_PI
-    updatePins(void),                       // Change pins, hardware SPI
-#endif // ifndef RASPBERRY_PI
     updateLength(uint16_t n);               // Change strip length
   uint16_t
     numPixels(void);
   uint32_t
-    Color(byte, byte, byte),
-    getPixelColor(uint16_t n);
+    Color(byte, byte, byte) const,
+    getPixelColor(uint16_t n) const;
 
  private:
-
-  uint16_t
-    numLEDs,    // Number of RGB LEDs in strip
-    numBytes;   // Size of 'pixels' buffer below
+  uint16_t numLEDs;    // Number of RGB LEDs in strip (each led needs 3 bytes)
+  uint16_t largestChangedLed; // last LED changed after show().
+  
   uint8_t
     *pixels,    // Holds LED color values (3 bytes each) + latch bytes
-    clkpin    , datapin;     // Clock & data pin numbers
-#ifdef __AVR__
-  uint8_t
-    clkpinmask, datapinmask; // Clock & data PORT bitmasks
-  volatile uint8_t
-    *clkport  , *dataport;   // Clock & data PORT registers
-#endif
-  void
-    startBitbang(void),
-    startSPI(void);
-  boolean
-    hardwareSPI, // If 'true', using hardware SPI
-    begun;       // If 'true', begin() method was previously invoked
+    clkpin, datapin;     // Clock & data pin numbers
+
+  void startBitbang() const;
+  void bitBangLatchSignal() const;
+  boolean begun;       // If 'true', begin() method was previously invoked
+
+  // not implemented
+  LPD8806();
+  LPD8806(const LPD8806& other);
+  LPD8806& operator=(const LPD8806& other);
 };
